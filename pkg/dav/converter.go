@@ -1,6 +1,7 @@
 package dav
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"dav_converter/configs"
 	"dav_converter/pkg/dav/converter"
+	"dav_converter/pkg/dav/exception"
 	"dav_converter/pkg/dav/images"
 	"dav_converter/pkg/repository"
 	"dav_converter/pkg/subprocess"
@@ -32,7 +34,10 @@ func Converter(
 	for {
 		_files, err := dav.Next()
 		if err != nil {
-			break
+			if errors.Is(err, exception.ErrorStopIterator) {
+				break
+			}
+			return err
 		}
 		davFiles = append(davFiles, _files...)
 	}

@@ -14,7 +14,7 @@ import (
 func main() {
 	config, err := configs.Get("settings.txt")
 	if err != nil {
-		log.Fatal("Не был найден файл настроек settings.txt")
+		log.Fatal("Не был найден файл настроек settings.txt\n")
 	}
 
 	countCPU := runtime.NumCPU()
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	if len(pathList) == 0 {
-		log.Fatal("Не была указана ни одна папка с файлами .dav")
+		log.Fatal("Не была указана ни одна папка с файлами .dav\n")
 	}
 
 	davPath := files.NewDavPathFiles(pathList)
@@ -33,7 +33,7 @@ func main() {
 	err = dav.Converter(config, davPath, countCPU)
 
 	if err != nil {
-		log.Fatalf("Во время работы программы возникла ошибка: %w", err)
+		log.Fatalf("Во время работы программы возникла ошибка: %v\n", err)
 	}
 
 	fmt.Println("Для выхода нажмите Enter.")

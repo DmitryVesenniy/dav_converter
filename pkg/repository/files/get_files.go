@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"dav_converter/pkg/dav/exception"
 	"dav_converter/pkg/repository"
 )
 
@@ -56,7 +57,7 @@ func (dpf *DavPathFiles) Next() ([]repository.IDavFile, error) {
 
 func (dpf *DavPathFiles) GetDavList(index int) ([]repository.IDavFile, error) {
 	if len(dpf.Dirs) <= index {
-		return nil, fmt.Errorf("index is out of bounds")
+		return nil, exception.ErrorStopIterator
 	}
 
 	path := dpf.Dirs[index]
