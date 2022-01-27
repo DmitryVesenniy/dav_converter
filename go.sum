@@ -1,0 +1,12 @@
+github.com/DmitryVesenniy/goconfig v0.0.0-20220124161644-b07e3387959d h1:JVogTWkceAGJj3edAeszYrxV+0eqQ64HHBF1nmbsfdY=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220124161644-b07e3387959d/go.mod h1:Vc/xhfDWAv6wS0WONEat3Rtr1m5sjEOL/O2fN7CdCxA=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220126162636-0b2ee3211793 h1:VZHAkVpaWUrOzdjDyAtPgx950KFrnsHtQOaA0w3RzOE=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220126162636-0b2ee3211793/go.mod h1:Vc/xhfDWAv6wS0WONEat3Rtr1m5sjEOL/O2fN7CdCxA=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220126164943-5d1bc61c3c72 h1:trUDECqe5OeVaRuLTj0+GJFzEtEp5Jd99jB6rDKNASE=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220126164943-5d1bc61c3c72/go.mod h1:Vc/xhfDWAv6wS0WONEat3Rtr1m5sjEOL/O2fN7CdCxA=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220126172326-8d05041000f5 h1:dLq8w07EBfhoUU8JdGBt5QHZjMmK/q7eFblzKuzffR8=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220126172326-8d05041000f5/go.mod h1:Vc/xhfDWAv6wS0WONEat3Rtr1m5sjEOL/O2fN7CdCxA=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220127010054-02bb70e961c4 h1:Q/aMINQozRNX/mS7Sa/8PvnFooTQQUqAyZqg29cfzRI=
+github.com/DmitryVesenniy/goconfig v0.0.0-20220127010054-02bb70e961c4/go.mod h1:Vc/xhfDWAv6wS0WONEat3Rtr1m5sjEOL/O2fN7CdCxA=
+github.com/joho/godotenv v1.4.0 h1:3l4+N6zfMWnkbPEXKng2o2/MR5mSwTrBih4ZEkkz1lg=
+github.com/joho/godotenv v1.4.0/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
