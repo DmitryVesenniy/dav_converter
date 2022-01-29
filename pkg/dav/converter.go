@@ -77,9 +77,21 @@ func Converter(
 				}
 			}
 		} else {
+			isExistRoot, err := utils.Exists(_davFile.GetBasePath())
+			if err != nil {
+				return fmt.Errorf("error get stat path: %w", err)
+			}
+
+			if !isExistRoot {
+				err = os.Mkdir(_davFile.GetBasePath(), 0755)
+				if err != nil {
+					return fmt.Errorf("не удалось создать папку: %s; error: %w", _davFile.GetBasePath(), err)
+				}
+			}
+
 			err = os.Mkdir(_davFile.GetPathFrame(), 0755)
 			if err != nil {
-				return fmt.Errorf("error create path frame: %w", err)
+				return fmt.Errorf("не удалось создать папку: %s; error: %w", _davFile.GetPathFrame(), err)
 			}
 		}
 

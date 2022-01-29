@@ -10,11 +10,14 @@ import (
 
 	"dav_converter/pkg/dav/exception"
 	"dav_converter/pkg/repository"
+	"dav_converter/pkg/utils"
 )
 
 type DavPathFiles struct {
 	Dirs         []string
+	Path         string
 	currentIndex int
+	files        []*os.File
 }
 
 type DavFile struct {
@@ -55,6 +58,12 @@ func (dpf *DavPathFiles) Next() ([]repository.IDavFile, error) {
 	return davFiles, nil
 }
 
+func (dpf *DavPathFiles) Close() {
+	for _, file := range dpf.files {
+		file.Close()
+	}
+}
+
 func (dpf *DavPathFiles) GetDavList(index int) ([]repository.IDavFile, error) {
 	if len(dpf.Dirs) <= index {
 		return nil, exception.ErrorStopIterator
@@ -74,15 +83,19 @@ func (dpf *DavPathFiles) GetDavList(index int) ([]repository.IDavFile, error) {
 			ext := filepath.Ext(file.Name())
 			if ext == ".dav" {
 				fileName := strings.Split(file.Name(), ".")[0]
-				pathFrames := filepath.Join(path, fileName)
+				rootPath := utils.GetFirsRootPath(path)
+				pathFrames := filepath.Join(dpf.Path, rootPath, fileName)
+				// pathFrames := filepath.Join(path, fileName)
+
 				_fileObj, err := os.Open(filepath.Join(path, file.Name()))
 				if err != nil {
 					return nil, fmt.Errorf("error open dav file %w", err)
 				}
+				dpf.files = append(dpf.files, _fileObj)
 				_fileDav := &DavFile{
 					Name:      file.Name(),
 					PathFrame: pathFrames,
-					BasePath:  path,
+					BasePath:  filepath.Join(dpf.Path, rootPath),
 					File:      io.ReadSeeker(_fileObj),
 				}
 				fileDavList = append(fileDavList, _fileDav)
@@ -93,9 +106,10 @@ func (dpf *DavPathFiles) GetDavList(index int) ([]repository.IDavFile, error) {
 	return fileDavList, nil
 }
 
-func NewDavPathFiles(pathList []string) *DavPathFiles {
+func NewDavPathFiles(path string, pathList []string) *DavPathFiles {
 	return &DavPathFiles{
 		Dirs:         pathList,
+		Path:         path,
 		currentIndex: 0,
 	}
 }
