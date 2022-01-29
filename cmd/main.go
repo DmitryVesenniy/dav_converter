@@ -27,6 +27,13 @@ func main() {
 		pathList[i] = strings.TrimSpace(path)
 	}
 
+	if len(pathList) == 0 {
+		fmt.Println("Не была указана ни одна папка с файлами .dav")
+		fmt.Println("Для выхода нажмите Enter.")
+		fmt.Scanln()
+		return
+	}
+
 	// анализируем указанные папки, есть ли в них нужные нам файлы
 	for _, _path := range pathList {
 		files, err := prestart.SearchFilesFromDir(_path, ".dav")
@@ -46,13 +53,6 @@ func main() {
 
 	fmt.Println("Для продолжения нажмите Enter.")
 	fmt.Scanln()
-
-	if len(pathList) == 0 {
-		fmt.Println("Не была указана ни одна папка с файлами .dav")
-		fmt.Println("Для выхода нажмите Enter.")
-		fmt.Scanln()
-		return
-	}
 
 	davPath := files.NewDavPathFiles(config.PathOut, pathList)
 	defer davPath.Close()
