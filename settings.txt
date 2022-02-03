@@ -1,5 +1,5 @@
 # список папок с dav, разделитель ','
-PATH=/run/media/dmitry/dev/works/makadam/ffmpeg_test/Подъезд к д. Святогорка/,/run/media/dmitry/dev/works/makadam/ffmpeg_test/Алтай-Кузбасс (пасп 2018)/
+PATH=/run/media/dmitry/dev/works/makadam/ffmpeg_test/Арлюк-Васильевка_prm/
 
 # папка где будут сохранены все папки с видео
 OUT_PATH=/run/media/dmitry/Хранилище/test/

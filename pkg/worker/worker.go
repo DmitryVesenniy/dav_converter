@@ -23,6 +23,7 @@ func Worker(
 	pipeline := make(chan protocol)
 	indexProcess := 1
 
+	defer close(errorCh)
 LOOP:
 	for {
 		select {

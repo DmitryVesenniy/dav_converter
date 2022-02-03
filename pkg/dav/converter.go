@@ -27,9 +27,9 @@ func Converter(
 	cfg *configs.ConfigApp,
 	dav repository.IDavPath,
 	countProcess int,
-) error {
+) []error {
 	davFiles := make([]repository.IDavFile, 0, 0)
-
+	errorsConverter := make([]error, 0)
 	// получаем все файлы .dav
 	for {
 		_files, err := dav.Next()
@@ -37,7 +37,8 @@ func Converter(
 			if errors.Is(err, exception.ErrorStopIterator) {
 				break
 			}
-			return err
+			errorsConverter = append(errorsConverter, err)
+			return errorsConverter
 		}
 		davFiles = append(davFiles, _files...)
 	}
@@ -47,7 +48,8 @@ func Converter(
 		if stat, err := os.Stat(_davFile.GetPathFrame()); err == nil && stat.IsDir() {
 			files, err := ioutil.ReadDir(_davFile.GetPathFrame())
 			if err != nil {
-				return fmt.Errorf("error read path frame: %w", err)
+				errorsConverter = append(errorsConverter, fmt.Errorf("error read path frame: %w", err))
+				return errorsConverter
 			}
 
 			if len(files) > 0 {
@@ -58,7 +60,8 @@ func Converter(
 					for _, _f := range files {
 						err := os.Remove(filepath.Join(_davFile.GetPathFrame(), _f.Name()))
 						if err != nil {
-							return fmt.Errorf("error delete file from path frame: %w", err)
+							errorsConverter = append(errorsConverter, fmt.Errorf("error delete file from path frame: %w", err))
+							return errorsConverter
 						}
 					}
 
@@ -66,12 +69,14 @@ func Converter(
 					mp4 := filepath.Join(_davFile.GetBasePath(), fmt.Sprintf("%s.mp4", baseName))
 					isExist, err := utils.Exists(mp4)
 					if err != nil {
-						return fmt.Errorf("error from utils.Exists: %w", err)
+						errorsConverter = append(errorsConverter, fmt.Errorf("error from utils.Exists: %w", err))
+						return errorsConverter
 					}
 					if isExist {
 						err := os.Remove(mp4)
 						if err != nil {
-							return fmt.Errorf("failed to delete file: %w", err)
+							errorsConverter = append(errorsConverter, fmt.Errorf("failed to delete file: %w", err))
+							return errorsConverter
 						}
 					}
 				}
@@ -79,19 +84,23 @@ func Converter(
 		} else {
 			isExistRoot, err := utils.Exists(_davFile.GetBasePath())
 			if err != nil {
-				return fmt.Errorf("error get stat path: %w", err)
+				errorsConverter = append(errorsConverter, fmt.Errorf("error get stat path: %w", err))
+				return errorsConverter
 			}
 
 			if !isExistRoot {
 				err = os.Mkdir(_davFile.GetBasePath(), 0755)
 				if err != nil {
-					return fmt.Errorf("не удалось создать папку: %s; error: %w", _davFile.GetBasePath(), err)
+					errorsConverter = append(errorsConverter, fmt.Errorf("не удалось создать папку: %s; error: %w", _davFile.GetBasePath(), err))
+					return errorsConverter
 				}
 			}
 
 			err = os.Mkdir(_davFile.GetPathFrame(), 0755)
 			if err != nil {
-				return fmt.Errorf("не удалось создать папку: %s; error: %w", _davFile.GetPathFrame(), err)
+				errorsConverter = append(errorsConverter,
+					fmt.Errorf("не удалось создать папку: %s; error: %w", _davFile.GetPathFrame(), err))
+				return errorsConverter
 			}
 		}
 
@@ -111,11 +120,11 @@ LOOP:
 	for {
 		select {
 		case err := <-errorCh:
-			fmt.Println(err)
+			errorsConverter = append(errorsConverter, err)
 			countErrors++
 
 		case <-done:
-			return nil
+			return errorsConverter
 		}
 
 		if countErrors >= maxErrorsConverter {
@@ -125,7 +134,9 @@ LOOP:
 		runtime.Gosched()
 	}
 
-	return fmt.Errorf("max count error")
+	errorsConverter = append(errorsConverter,
+		fmt.Errorf("max count error"))
+	return errorsConverter
 }
 
 func runConverter(_davFile repository.IDavFile) error {
@@ -149,8 +160,7 @@ func runConverter(_davFile repository.IDavFile) error {
 		}
 
 		img := images.NewImageFrame(filepath.Join(_davFile.GetPathFrame(), fmt.Sprintf("%v.jpg", i+1)))
-
-		err = img.SaveImg(imgBytes)
+		err = img.SaveDecodingImg(imgBytes)
 		if err != nil {
 			return fmt.Errorf("error save image: %w", err)
 		}
@@ -165,12 +175,12 @@ func runConverter(_davFile repository.IDavFile) error {
 	commands := map[string]subprocess.Command{
 		"linux": {
 			NameCommand: "ffmpeg",
-			Args: []string{"-i", pathFromConvert, "-c:v", "libx264",
+			Args: []string{"-i", pathFromConvert, "-c:v", "libx264", "-crf", "25",
 				"-vf", "fps=25", "-pix_fmt", "yuv420p", outMp4},
 		},
 		"windows": {
 			NameCommand: "ffmpeg.exe",
-			Args: []string{"-i", pathFromConvert, "-c:v", "libx264",
+			Args: []string{"-i", pathFromConvert, "-c:v", "libx264", "-crf", "25",
 				"-vf", "fps=25", "-pix_fmt", "yuv420p", outMp4},
 		},
 	}

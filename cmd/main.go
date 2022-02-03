@@ -21,6 +21,7 @@ func main() {
 	}
 
 	countCPU := runtime.NumCPU()
+	runtime.GOMAXPROCS(countCPU)
 	pathList := strings.Split(config.PathList, ",")
 
 	for i, path := range pathList {
@@ -57,10 +58,14 @@ func main() {
 	davPath := files.NewDavPathFiles(config.PathOut, pathList)
 	defer davPath.Close()
 
-	err = dav.Converter(config, davPath, countCPU)
+	errList := dav.Converter(config, davPath, countCPU)
 
-	if err != nil {
-		fmt.Printf("Во время работы программы возникла ошибка: %v\n", err)
+	if len(errList) > 0 {
+		fmt.Println("[!] Во время работы программы возникли следующие ошибки:")
+
+		for _, _err := range errList {
+			fmt.Printf("    -- %v\n", _err)
+		}
 		fmt.Println("Для выхода нажмите Enter.")
 		fmt.Scanln()
 		return
