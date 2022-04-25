@@ -25,6 +25,7 @@ type DavFile struct {
 	PathFrame string
 	BasePath  string
 	File      io.ReadSeeker
+	fileObj   *os.File
 }
 
 func (df *DavFile) GetPathFrame() string {
@@ -41,6 +42,10 @@ func (df *DavFile) GetBasePath() string {
 
 func (df *DavFile) GetName() string {
 	return df.Name
+}
+
+func (df *DavFile) Close() error {
+	return df.fileObj.Close()
 }
 
 // SetDavPath Exports
@@ -112,4 +117,24 @@ func NewDavPathFiles(path string, pathList []string) *DavPathFiles {
 		Path:         path,
 		currentIndex: 0,
 	}
+}
+
+func NewDavFile(filePath string) (repository.IDavFile, error) {
+	ext := filepath.Ext(filePath)
+	if ext != ".dav" {
+		return nil, fmt.Errorf("Это не dav файл")
+	}
+
+	_fileObj, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("error open dav file %w", err)
+	}
+
+	fileDav := &DavFile{
+		Name:    filePath,
+		File:    io.ReadSeeker(_fileObj),
+		fileObj: _fileObj,
+	}
+
+	return fileDav, nil
 }

@@ -7,6 +7,7 @@ type IDavFile interface {
 	GetBasePath() string
 	GetName() string
 	GetReader() io.ReadSeeker
+	Close() error
 }
 
 type IDavPath interface {

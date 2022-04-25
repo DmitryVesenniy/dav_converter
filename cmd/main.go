@@ -1,17 +1,52 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"runtime"
 	"strings"
 
 	"dav_converter/configs"
 	"dav_converter/internal/prestart"
+	"dav_converter/pkg/analysis"
 	"dav_converter/pkg/dav"
+	"dav_converter/pkg/dav/converter"
 	"dav_converter/pkg/repository/files"
 )
 
 func main() {
+	file := flag.String("file", "", "путь до файла dav")
+	analisisPath := flag.String("analisis", "", "путь до папки с отконвертированными папками заездов")
+	flag.Parse()
+
+	if *file != "" {
+		davFile, err := files.NewDavFile(*file)
+		if err != nil {
+			fmt.Printf("Непредвиденная ошибка: %s\n", err)
+			return
+		}
+
+		converter, err := converter.NewConverter(davFile.GetReader())
+		if err != nil {
+			fmt.Printf("Непредвиденная ошибка: %s\n", err)
+			return
+		}
+
+		fmt.Printf("Количество кадров: %d\n", len(converter.IndexTable))
+
+		davFile.Close()
+		return
+	}
+
+	if *analisisPath != "" {
+		fmt.Printf("[!] Анализ конвертированных папок по адресу: %s\n", *analisisPath)
+		err := analysis.Analysis(*analisisPath)
+		if err != nil {
+			fmt.Printf("во время анализа возникла ошибка: %s\n", err.Error())
+		}
+		return
+	}
+
 	config, err := configs.Get("settings.txt")
 	if err != nil {
 		fmt.Println("Не был найден файл настроек settings.txt")

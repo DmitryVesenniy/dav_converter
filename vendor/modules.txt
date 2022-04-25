@@ -1,0 +1,9 @@
+# github.com/DmitryVesenniy/goconfig v0.0.0-20220127010054-02bb70e961c4
+## explicit; go 1.17
+github.com/DmitryVesenniy/goconfig/ini
+# github.com/alfg/mp4 v0.0.0-20210728035756-55ea58c08aeb
+## explicit; go 1.12
+github.com/alfg/mp4
+github.com/alfg/mp4/atom
+# github.com/joho/godotenv v1.4.0
+## explicit; go 1.12
