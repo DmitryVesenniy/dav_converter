@@ -106,17 +106,18 @@ func Converter(
 
 		df := _davFile
 		defs = append(defs, func() error {
-			return runConverter(df)
+			return runConverter(df, cfg)
 		})
 	}
 
-	stop := make(chan struct{})
+	stop := make(chan struct{}, 1)
 	done := make(chan struct{})
 	errorCh := make(chan error, 2)
 	go worker.Worker(defs, countProcess, stop, done, errorCh)
 
 	countErrors := 0
-LOOP:
+
+	// LOOP:
 	for {
 		select {
 		case err := <-errorCh:
@@ -129,7 +130,7 @@ LOOP:
 
 		if countErrors >= maxErrorsConverter {
 			stop <- struct{}{}
-			break LOOP
+			// break LOOP
 		}
 		runtime.Gosched()
 	}
@@ -139,37 +140,53 @@ LOOP:
 	return errorsConverter
 }
 
-func runConverter(_davFile repository.IDavFile) error {
+func runConverter(_davFile repository.IDavFile, cfg *configs.ConfigApp) error {
 	converter, err := converter.NewConverter(_davFile.GetReader())
 	if err != nil {
-		return fmt.Errorf("error create new converter: %w", err)
+		return fmt.Errorf("[!] Ошибка конвертирования <%s>: %w", _davFile.GetPathFrame(), err)
 	}
 
 	fmt.Printf("[!] %s: Сохранение кадров...\n", _davFile.GetPathFrame())
-	count := 0
 	// сохраняем все кадры в папку
+	i := 1
+	var cirrentImgBytes []byte
 	for {
-		tag, i, err := converter.Next()
+		tag, _, err := converter.Next()
 		if err != nil {
 			break
 		}
 
 		imgBytes, err := converter.GetImagesOnTagIDX(tag)
 		if err != nil {
-			return fmt.Errorf("error get image from frame: %w", err)
+			return fmt.Errorf("[!] Ошибка конвертирования <%s>: error get image from frame: %w", _davFile.GetPathFrame(), err)
 		}
 
-		img := images.NewImageFrame(filepath.Join(_davFile.GetPathFrame(), fmt.Sprintf("%v.jpg", i+1)))
+		if len(imgBytes) == 0 {
+			imgBytes = cirrentImgBytes
+		} else {
+			cirrentImgBytes = imgBytes
+		}
+
+		if len(imgBytes) == 0 {
+			continue
+		}
+
+		img := images.NewImageFrame(filepath.Join(_davFile.GetPathFrame(), fmt.Sprintf("%v.jpg", i)))
 		err = img.SaveDecodingImg(imgBytes)
 		if err != nil {
-			return fmt.Errorf("error save image: %w", err)
+			return fmt.Errorf("[!] Ошибка конвертирования <%s>: error save image: %w", _davFile.GetPathFrame(), err)
 		}
-		count++
+		i++
 	}
-	fmt.Printf("[!] %s: Всего сохранено кадров: %d\n", _davFile.GetPathFrame(), count)
+	fmt.Printf("[!] %s: Всего сохранено кадров: %d\n", _davFile.GetPathFrame(), i)
 	fmt.Printf("[!] %s: Конвертация кадров в mp4...\n", _davFile.GetPathFrame())
-	pathFromConvert := fmt.Sprintf("%s/%%d.jpg", _davFile.GetPathFrame())
+	pathFromConvert := filepath.Join(_davFile.GetPathFrame(), "%d.jpg") //fmt.Sprintf("%s/%%d.jpg", _davFile.GetPathFrame())
 	outMp4 := fmt.Sprintf("%s.mp4", _davFile.GetPathFrame())
+
+	if cfg.IsDev {
+		fmt.Println("[!DEV] pathFromConvert: ", pathFromConvert)
+		fmt.Println("[!DEV] outMp4: ", outMp4)
+	}
 
 	// конвертируем кадры в mp4
 	commands := map[string]subprocess.Command{
@@ -187,12 +204,12 @@ func runConverter(_davFile repository.IDavFile) error {
 
 	process, err := subprocess.NewSysProcess(commands)
 	if err != nil {
-		return fmt.Errorf("error init process: %w", err)
+		return fmt.Errorf("[!] Ошибка конвертирования <%s>: error init process: %w", _davFile.GetPathFrame(), err)
 	}
 
 	err = process.Run()
 	if err != nil {
-		return fmt.Errorf("error run process: %w", err)
+		return fmt.Errorf("[!] Ошибка конвертирования <%s>: error run process: %w", _davFile.GetPathFrame(), err)
 	}
 
 	return nil

@@ -13,8 +13,14 @@ type ImageFrame struct {
 }
 
 func (i *ImageFrame) SaveDecodingImg(data []byte) error {
+	// if data[len(data)-1] == '\x00' && data[len(data)-2] == '\xff' {
+	// 	data[len(data)-1] = '\xd9'
+	// }
+
 	r := bytes.NewReader(data)
 	img, err := jpeg.Decode(r)
+	// fmt.Printf("[!] %x [%x]: [%x]\n", data[len(data)-1], data[len(data)-2], data[len(data)-10])
+	// fmt.Printf("%+v\n", data[len(data)-10:])
 	if err != nil {
 		return i.SaveImg(data)
 		// return fmt.Errorf("error decode jpeg from bytes: %w", err)
@@ -24,7 +30,6 @@ func (i *ImageFrame) SaveDecodingImg(data []byte) error {
 	err = jpeg.Encode(&imageBuf, img, nil)
 	if err != nil {
 		return i.SaveImg(data)
-		// return fmt.Errorf("error encode jpeg from bytes: %w", err)
 	}
 
 	file, err := os.Create(i.filePath)

@@ -15,6 +15,7 @@ type ConfigApp struct {
 	PathList  string `ini:"PATH"`
 	PathOut   string `ini:"OUT_PATH"`
 	SkipExist bool   `ini:"SKIP"`
+	IsDev bool
 }
 
 // Get Exports

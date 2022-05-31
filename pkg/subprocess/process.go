@@ -33,14 +33,13 @@ func (sp *SysProcess) Run() error {
 func NewSysProcess(commands map[string]Command) (*SysProcess, error) {
 	osSystem := runtime.GOOS
 
-	for osName, _command := range commands {
-		if osName == osSystem {
-			return &SysProcess{
-				OS:      osSystem,
-				Command: _command,
-			}, nil
-		}
+	_command, ok := commands[osSystem]
+	if !ok {
+		return &SysProcess{}, fmt.Errorf("not found os command")
 	}
 
-	return &SysProcess{}, fmt.Errorf("not found os command")
+	return &SysProcess{
+		OS:      osSystem,
+		Command: _command,
+	}, nil
 }

@@ -16,7 +16,8 @@ import (
 
 func main() {
 	file := flag.String("file", "", "путь до файла dav")
-	analisisPath := flag.String("analisis", "", "путь до папки с отконвертированными папками заездов")
+	analysisPath := flag.String("analysis", "", "путь до папки с отконвертированными папками заездов")
+	isDev := flag.Bool("dev", false, "включить режим разработчика")
 	flag.Parse()
 
 	if *file != "" {
@@ -38,9 +39,9 @@ func main() {
 		return
 	}
 
-	if *analisisPath != "" {
-		fmt.Printf("[!] Анализ конвертированных папок по адресу: %s\n", *analisisPath)
-		err := analysis.Analysis(*analisisPath)
+	if *analysisPath != "" {
+		fmt.Printf("[!] Анализ конвертированных папок по адресу: %s\n", *analysisPath)
+		err := analysis.Analysis(*analysisPath)
 		if err != nil {
 			fmt.Printf("во время анализа возникла ошибка: %s\n", err.Error())
 		}
@@ -53,6 +54,12 @@ func main() {
 		fmt.Println("Для выхода нажмите Enter.")
 		fmt.Scanln()
 		return
+	}
+
+	config.IsDev = *isDev
+
+	if config.IsDev {
+		fmt.Println("[!DEV] Включен режим разработчика")
 	}
 
 	countCPU := runtime.NumCPU()

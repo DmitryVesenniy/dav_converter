@@ -23,10 +23,16 @@ func (c *Converter) convert() error {
 		return fmt.Errorf("error get header dav: %w", err)
 	}
 
+	// fmt.Printf(">> %+v\n", c.HeaderDav)
+
 	// Заполняем таблицу индексов
 	c.ReaderDav.Seek(c.HeaderDav.OffsetIndex, io.SeekStart)
 	for {
 		tagIndex, err := getTagIdx(c.ReaderDav)
+
+		if tagIndex.KadrOffset == 0 {
+			return fmt.Errorf("error get tagIndex dav: index table read error")
+		}
 
 		if err == io.EOF {
 			break
@@ -54,12 +60,15 @@ func (c *Converter) GetImagesOnTagIDX(t usecase.TagFrameIDX) ([]byte, error) {
 		return nil, fmt.Errorf("error get header frame: %w", err)
 	}
 
+	// fmt.Printf("[!] headerFrame: %+v\n", headerFrame)
+
 	kadrBytes := make([]byte, headerFrame.SizeKadr)
 
 	_, err = c.ReaderDav.Read(kadrBytes)
 	if err != nil {
 		return nil, fmt.Errorf("error reader kadr: %w", err)
 	}
+	// fmt.Printf("[!] kadrBytes: %+v\n", kadrBytes)
 
 	return kadrBytes, nil
 }
@@ -73,10 +82,21 @@ func (c *Converter) GetFrameIndex(index int) (usecase.TagFrameIDX, error) {
 }
 
 func (c *Converter) Next() (usecase.TagFrameIDX, int, error) {
-	if c.currentIndex < len(c.IndexTable) {
-		tagIndex := c.IndexTable[c.currentIndex]
-		currentIndex := c.currentIndex
-		c.currentIndex++
+	currentIndex := c.currentIndex
+	// nextIndex := usecase.TagFrameIDX{}
+
+	if currentIndex < len(c.IndexTable) {
+		tagIndex := c.IndexTable[currentIndex]
+
+		// if currentIndex < len(c.IndexTable)-1 {
+		// 	nextIndex = c.IndexTable[currentIndex+1]
+		// }
+
+		// if nextIndex.TimeTM == tagIndex.TimeTM {
+		// 	tagIndex = nextIndex
+		// 	currentIndex++
+		// }
+		c.currentIndex = currentIndex + 1
 		return tagIndex, currentIndex, nil
 	}
 	return usecase.TagFrameIDX{}, 0, exception.FrameBounds{}

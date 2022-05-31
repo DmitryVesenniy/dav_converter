@@ -8,8 +8,12 @@ import (
 	"strings"
 )
 
+const (
+	maximumDeviation = 0
+)
+
 func Analysis(filePath string) error {
-	errorFolders := make([]string, 0)
+	errorFolders := make(map[string]struct{}, 0)
 	folders, err := ioutil.ReadDir(filePath)
 	if err != nil {
 		return fmt.Errorf("не удалось получить файлы из папки %w", err)
@@ -39,7 +43,7 @@ func Analysis(filePath string) error {
 
 			for _, fileAnalysis := range filesMp4 {
 				name := fileAnalysis.file.Name()
-				folderName := strings.Split(name, ".")[0]
+				folderName := strings.TrimSuffix(name, ".mp4")
 				// filePath := filepath.Join(folder, folderName)
 
 				frames, err := ioutil.ReadDir(folderName)
@@ -53,16 +57,21 @@ func Analysis(filePath string) error {
 					return fmt.Errorf("не удалось получить количество кадров из mp4 %w", err)
 				}
 
-				if countFramesFromPath != countFramesFromMP4 {
-					fmt.Printf("[!] Внимание кадры сконвертированны с ошибкой! Папка: %s\n", folder)
-					errorFolders = append(errorFolders, folder)
+				if (countFramesFromPath - countFramesFromMP4) > maximumDeviation {
+					// fmt.Printf("[!] Внимание кадры сконвертированны с ошибкой! Папка: %s\n", folder)
+					errorFolders[folder] = struct{}{}
 				}
 			}
 		}
 	}
 
 	if len(errorFolders) > 0 {
-		ReportAnalysis(errorFolders)
+		errorsFoldersList := make([]string, 0, len(errorFolders))
+		for _folder := range errorFolders {
+			fmt.Printf("[!] Внимание кадры сконвертированны с ошибкой! Папка: %s\n", _folder)
+			errorsFoldersList = append(errorsFoldersList, _folder)
+		}
+		ReportAnalysis(errorsFoldersList)
 	}
 
 	return nil
