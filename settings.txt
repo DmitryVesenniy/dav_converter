@@ -1,5 +1,8 @@
 # список папок с dav, разделитель ','
-PATH=/run/media/dmitry/dev/works/makadam/ffmpeg_test2/convert_error_test/
+PATH=
+
+# список папок для создания превью
+PREVIEW_PATH=/run/media/dmitry/dev/works/makadam/ffmpeg_test2/Ленинск-Кузнецкий-Прокопьевск-Новокузнецк/,/run/media/dmitry/dev/works/makadam/ffmpeg_test2/Ленинск-Кузнецкий-Прокопьевск-Новокузнецк развязка 1 съезд 1/
 
 # папка где будут сохранены все папки с видео
 OUT_PATH=/run/media/dmitry/libs/test/

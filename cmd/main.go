@@ -64,43 +64,70 @@ func main() {
 
 	countCPU := runtime.NumCPU()
 	runtime.GOMAXPROCS(countCPU)
-	pathList := strings.Split(config.PathList, ",")
+	pathList := make([]string, 0)
+	previewPathList := make([]string, 0)
 
-	for i, path := range pathList {
-		pathList[i] = strings.TrimSpace(path)
+	for _, path := range strings.Split(config.PathList, ",") {
+		_path := strings.TrimSpace(path)
+		if _path != "" {
+			pathList = append(pathList, _path)
+		}
 	}
 
-	if len(pathList) == 0 {
+	for _, path := range strings.Split(config.PreviewPath, ",") {
+		_path := strings.TrimSpace(path)
+		if _path != "" {
+			previewPathList = append(previewPathList, _path)
+		}
+	}
+
+	if len(pathList) == 0 && len(previewPathList) == 0 {
 		fmt.Println("Не была указана ни одна папка с файлами .dav")
 		fmt.Println("Для выхода нажмите Enter.")
 		fmt.Scanln()
 		return
 	}
 
-	// анализируем указанные папки, есть ли в них нужные нам файлы
-	for _, _path := range pathList {
-		files, err := prestart.SearchFilesFromDir(_path, ".dav")
-		if err != nil {
-			fmt.Println(err.Error())
-			continue
-		}
-		if len(files) == 0 {
-			fmt.Printf("В папке %s не найдены файлы с расширением .dav\n", _path)
-		} else {
-			fmt.Printf("В папке %s найдены файлы:\n", _path)
-			for _, _fName := range files {
-				fmt.Println("    ...", _fName)
+	var errList []error
+
+	if len(pathList) > 0 {
+		fmt.Println("[!] Конвертирую")
+		// анализируем указанные папки, есть ли в них нужные нам файлы
+		for _, _path := range pathList {
+			files, err := prestart.SearchFilesFromDir(_path, ".dav")
+			if err != nil {
+				fmt.Println(err.Error())
+				continue
+			}
+			if len(files) == 0 {
+				fmt.Printf("В папке %s не найдены файлы с расширением .dav\n", _path)
+			} else {
+				fmt.Printf("В папке %s найдены файлы:\n", _path)
+				for _, _fName := range files {
+					fmt.Println("    ...", _fName)
+				}
 			}
 		}
+
+		fmt.Println("Для продолжения нажмите Enter.")
+		fmt.Scanln()
+
+		davPath := files.NewDavPathFiles(config.PathOut, pathList)
+		defer davPath.Close()
+
+		errList = dav.Converter(config, davPath, countCPU)
 	}
 
-	fmt.Println("Для продолжения нажмите Enter.")
-	fmt.Scanln()
+	if len(previewPathList) > 0 {
+		fmt.Println("[!] Создаю превью")
+		davPath := files.NewDavPathFiles(config.PathOut, previewPathList)
+		defer davPath.Close()
 
-	davPath := files.NewDavPathFiles(config.PathOut, pathList)
-	defer davPath.Close()
-
-	errList := dav.Converter(config, davPath, countCPU)
+		err := dav.PreviewConverter(config, davPath, countCPU)
+		if err != nil {
+			errList = append(errList, err)
+		}
+	}
 
 	if len(errList) > 0 {
 		fmt.Println("[!] Во время работы программы возникли следующие ошибки:")

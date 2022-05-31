@@ -27,10 +27,11 @@ func (c *Converter) convert() error {
 
 	// Заполняем таблицу индексов
 	c.ReaderDav.Seek(c.HeaderDav.OffsetIndex, io.SeekStart)
+	isPrev := true
 	for {
 		tagIndex, err := getTagIdx(c.ReaderDav)
 
-		if tagIndex.KadrOffset == 0 {
+		if tagIndex.KadrOffset == 0 && isPrev {
 			return fmt.Errorf("error get tagIndex dav: index table read error")
 		}
 
@@ -48,6 +49,7 @@ func (c *Converter) convert() error {
 		// if err != nil {
 		// 	return fmt.Errorf("error seek file: %w", err)
 		// }
+		isPrev = false
 	}
 	return nil
 }

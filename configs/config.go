@@ -12,10 +12,11 @@ var (
 )
 
 type ConfigApp struct {
-	PathList  string `ini:"PATH"`
-	PathOut   string `ini:"OUT_PATH"`
-	SkipExist bool   `ini:"SKIP"`
-	IsDev bool
+	PathList    string `ini:"PATH"`
+	PathOut     string `ini:"OUT_PATH"`
+	PreviewPath string `ini:"PREVIEW_PATH"`
+	SkipExist   bool   `ini:"SKIP"`
+	IsDev       bool
 }
 
 // Get Exports
