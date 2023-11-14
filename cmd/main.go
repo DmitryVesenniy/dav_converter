@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -12,6 +13,10 @@ import (
 	"dav_converter/pkg/dav"
 	"dav_converter/pkg/dav/converter"
 	"dav_converter/pkg/repository/files"
+)
+
+var (
+	pathPattern = regexp.MustCompile(`\"(.*?)\"`)
 )
 
 func main() {
@@ -67,14 +72,16 @@ func main() {
 	pathList := make([]string, 0)
 	previewPathList := make([]string, 0)
 
-	for _, path := range strings.Split(config.PathList, ",") {
+	for _, path := range pathPattern.FindAllString(config.PathList, -1) {
 		_path := strings.TrimSpace(path)
 		if _path != "" {
 			pathList = append(pathList, _path)
 		}
 	}
 
-	for _, path := range strings.Split(config.PreviewPath, ",") {
+	fmt.Println("pathList: ", pathList)
+
+	for _, path := range pathPattern.FindAllString(config.PreviewPath, -1) {
 		_path := strings.TrimSpace(path)
 		if _path != "" {
 			previewPathList = append(previewPathList, _path)
